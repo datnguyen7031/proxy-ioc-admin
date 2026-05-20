@@ -1,8 +1,18 @@
 import express from 'express';
 import { config } from './config.js';
 import { createProxyHandler } from './proxy.js';
+import cors from 'cors'
+
 
 const app = express();
+
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+  ],
+  credentials: true,
+}))
 
 app.disable('x-powered-by');
 app.set('trust proxy', true);
