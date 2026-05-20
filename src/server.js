@@ -64,6 +64,24 @@ app.get('/__proxy/health', (req, res) => {
   });
 });
 
+app.get('/__proxy/config', (req, res) => {
+  res.json({
+    status: 200,
+    success: true,
+    data: {
+      service: 'proxy-ioc-admin',
+      host: config.host,
+      port: config.port,
+      upstream_base_url: config.upstreamBaseUrl.toString(),
+      client_api_prefix: config.clientApiPrefix,
+      cors_origin: config.corsOrigin,
+      proxy_timeout_ms: config.proxyTimeoutMs,
+      change_origin: config.changeOrigin,
+      log_requests: config.logRequests,
+    },
+  });
+});
+
 app.use(
   createProxyHandler({
     upstreamBaseUrl: config.upstreamBaseUrl,
@@ -82,4 +100,12 @@ const server = app.listen(config.port, config.host, () => {
 server.on('error', (error) => {
   console.error(`[server] failed to listen on ${config.host}:${config.port}: ${error.message}`);
   process.exitCode = 1;
+});
+
+process.on('uncaughtException', (error) => {
+  console.error(`[process] uncaught exception: ${error.stack || error.message}`);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('[process] unhandled rejection:', reason);
 });

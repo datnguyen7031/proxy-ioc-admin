@@ -13,6 +13,8 @@ const HOP_BY_HOP_HEADERS = new Set([
   'upgrade',
 ]);
 
+const BODYLESS_METHODS = new Set(['GET', 'HEAD']);
+
 function joinPaths(basePath, requestPath) {
   const base = basePath.replace(/\/+$/, '');
   const child = requestPath.replace(/^\/+/, '');
@@ -73,7 +75,7 @@ function buildForwardHeaders(req, targetUrl, options) {
   return headers;
 }
 
-function writeProxyError(res, status, message, detail) {
+function writeProxyError(res, status, message, detail, targetUrl) {
   if (res.headersSent) {
     res.destroy();
     return;
@@ -83,7 +85,10 @@ function writeProxyError(res, status, message, detail) {
     status,
     success: false,
     message,
-    ...(detail ? { detail } : {}),
+    data: {
+      ...(detail ? { detail } : {}),
+      ...(targetUrl ? { upstream_url: targetUrl.toString() } : {}),
+    },
   });
 }
 
@@ -132,16 +137,41 @@ export function createProxyHandler(options) {
 
     upstreamReq.on('error', (error) => {
       const status = error.code === 'ETIMEDOUT' ? 504 : 502;
-      writeProxyError(res, status, 'Không thể kết nối tới IOC Admin upstream', error.message);
+      if (options.logRequests) {
+        console.error(
+          `[proxy] ${status} ${req.method} ${req.originalUrl} -> ${targetUrl.toString()}: ${error.message}`,
+        );
+      }
+      writeProxyError(
+        res,
+        status,
+        'Không thể kết nối tới IOC Admin upstream',
+        { code: error.code, message: error.message },
+        targetUrl,
+      );
     });
 
     req.on('aborted', () => {
       upstreamReq.destroy();
     });
 
+    if (BODYLESS_METHODS.has(req.method)) {
+      upstreamReq.end();
+      return;
+    }
+
     pipeline(req, upstreamReq, (error) => {
-      if (error && !res.headersSent && options.logRequests) {
-        console.error(`[proxy] request stream failed: ${error.message}`);
+      if (error && !res.headersSent) {
+        if (options.logRequests) {
+          console.error(`[proxy] request stream failed: ${error.message}`);
+        }
+        writeProxyError(
+          res,
+          502,
+          'Không thể gửi request body tới IOC Admin upstream',
+          { message: error.message },
+          targetUrl,
+        );
       }
     });
   };
