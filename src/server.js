@@ -30,9 +30,10 @@ function isAllowedOrigin(origin) {
 
 app.use((req, res, next) => {
   const requestOrigin = req.headers.origin;
+  const requestHeaders = req.headers['access-control-request-headers'];
   const allowAnyOrigin = allowedOrigins.includes('*');
   const matchedOrigin = isAllowedOrigin(requestOrigin);
-  const allowOrigin = allowAnyOrigin ? '*' : matchedOrigin;
+  const allowOrigin = allowAnyOrigin ? '*' : matchedOrigin ? requestOrigin : null;
 
   res.setHeader('Vary', 'Origin');
   if (allowOrigin) {
@@ -41,7 +42,7 @@ app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
   res.setHeader(
     'Access-Control-Allow-Headers',
-    'Authorization,Content-Type,X-App-Code,X-Requested-With,Accept,Origin',
+    requestHeaders || 'Authorization,Content-Type,X-App-Code,X-Requested-With,Accept,Origin',
   );
 
   if (!allowAnyOrigin && allowOrigin) {
