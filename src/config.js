@@ -21,7 +21,7 @@ export const config = {
     process.env.UPSTREAM_BASE_URL || 'http://ioc-admin.toaan.gov.vn/api',
   ),
   clientApiPrefix: normalizePrefix(process.env.CLIENT_API_PREFIX || '/api'),
-  corsOrigin: process.env.CORS_ORIGIN || '*',
+  corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173,http://127.0.0.1:5173',
   proxyTimeoutMs: Number(process.env.PROXY_TIMEOUT_MS || 60000),
   changeOrigin: String(process.env.CHANGE_ORIGIN || 'true').toLowerCase() !== 'false',
   logRequests: String(process.env.LOG_REQUESTS || 'true').toLowerCase() !== 'false',
