@@ -1,0 +1,23 @@
+{
+  "name": "proxy-ioc-admin",
+  "version": "1.0.0",
+  "description": "Express proxy bridge for IOC Admin APIs that are reachable only from a VPN-connected host.",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "keywords": [
+    "express",
+    "proxy",
+    "ioc-admin"
+  ],
+  "author": "",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  }
+}
