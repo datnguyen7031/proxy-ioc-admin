@@ -12,10 +12,26 @@ const allowedOrigins = config.corsOrigin
   .map((origin) => origin.trim())
   .filter(Boolean);
 
+const devOriginPatterns = [
+  /^http:\/\/localhost:\d+$/,
+  /^http:\/\/127\.0\.0\.1:\d+$/,
+  /^http:\/\/192\.168\.\d+\.\d+:\d+$/,
+  /^http:\/\/10\.\d+\.\d+\.\d+:\d+$/,
+  /^http:\/\/172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+:\d+$/,
+];
+
+function isAllowedOrigin(origin) {
+  if (!origin) {
+    return false;
+  }
+
+  return allowedOrigins.includes(origin) || devOriginPatterns.some((pattern) => pattern.test(origin));
+}
+
 app.use((req, res, next) => {
   const requestOrigin = req.headers.origin;
   const allowAnyOrigin = allowedOrigins.includes('*');
-  const matchedOrigin = requestOrigin && allowedOrigins.includes(requestOrigin);
+  const matchedOrigin = isAllowedOrigin(requestOrigin);
   const allowOrigin = allowAnyOrigin ? '*' : matchedOrigin;
 
   res.setHeader('Vary', 'Origin');
