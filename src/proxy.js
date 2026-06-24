@@ -94,6 +94,19 @@ function writeProxyError(res, status, message, detail, targetUrl) {
 
 export function createProxyHandler(options) {
   return function proxyHandler(req, res) {
+    const incomingUrl = new URL(req.originalUrl || req.url, 'http://proxy.local');
+
+    if (options.endpointMatcher && !options.endpointMatcher(incomingUrl.pathname)) {
+      writeProxyError(
+        res,
+        404,
+        'Endpoint chưa được cấu hình để proxy',
+        { path: incomingUrl.pathname },
+        null,
+      );
+      return;
+    }
+
     const targetUrl = buildTargetUrl(req, options);
     const client = targetUrl.protocol === 'https:' ? https : http;
     const startedAt = Date.now();

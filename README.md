@@ -18,6 +18,25 @@ pnpm start
 
 Mặc định server listen trên `0.0.0.0:3000` để máy khác trong LAN có thể gọi vào.
 
+## Chạy theo từng project
+
+Project có sẵn 2 env local:
+
+- `.env.ioc-admin`: proxy IOC Admin, tương đương `.env.example` hiện tại.
+- `.env.ioc-webapp`: proxy toàn bộ endpoint sang `http://dremio.toaan.gov.vn`.
+
+```bash
+pnpm start:ioc-admin
+pnpm start:ioc-webapp
+```
+
+Khi dev có watch mode:
+
+```bash
+pnpm dev:ioc-admin
+pnpm dev:ioc-webapp
+```
+
 ## Cấu hình
 
 ```env
@@ -29,6 +48,8 @@ CORS_ORIGIN=http://localhost:5173,http://127.0.0.1:5173
 PROXY_TIMEOUT_MS=60000
 CHANGE_ORIGIN=true
 LOG_REQUESTS=true
+# Optional. Leave empty to proxy all configured IOC Admin endpoints from docs/.
+# PROXY_ENDPOINTS=/api/auth/*,/api/admin/users*,/api/admin/user-groups*
 ```
 
 Với cấu hình mặc định:
@@ -53,7 +74,7 @@ curl http://localhost:3000/health
 
 ## Endpoint theo docs
 
-Các nhóm API trong [`docs/`](docs/) được proxy nguyên trạng:
+Các nhóm API trong [`docs/`](docs/) được cấu hình mặc định và proxy nguyên trạng:
 
 - `/api/auth/*`
 - `/api/admin/users*`
@@ -67,6 +88,14 @@ Các nhóm API trong [`docs/`](docs/) được proxy nguyên trạng:
 - `/api/admin/module/options`
 - `/api/v1/options*`
 - `/api/admin/system*` hoặc `/admin/system*`
+
+Nếu cần giới hạn hoặc mở rộng danh sách endpoint được proxy, cấu hình env `PROXY_ENDPOINTS` bằng danh sách pattern phân tách bởi dấu phẩy. Pattern hỗ trợ exact path và wildcard ở cuối:
+
+```env
+PROXY_ENDPOINTS=/api/auth/*,/api/admin/users*,/api/admin/audit-logs*
+```
+
+Request không khớp endpoint đã cấu hình sẽ trả `404 Endpoint chưa được cấu hình để proxy`.
 
 ## Forward port cho client khác
 

@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { parseEndpointPatterns } from './endpoints.js';
 
 function normalizeBaseUrl(value) {
   const url = new URL(value);
@@ -25,4 +26,5 @@ export const config = {
   proxyTimeoutMs: Number(process.env.PROXY_TIMEOUT_MS || 60000),
   changeOrigin: String(process.env.CHANGE_ORIGIN || 'true').toLowerCase() !== 'false',
   logRequests: String(process.env.LOG_REQUESTS || 'true').toLowerCase() !== 'false',
+  proxyEndpoints: parseEndpointPatterns(process.env.PROXY_ENDPOINTS),
 };

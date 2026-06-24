@@ -6,7 +6,11 @@
   "type": "module",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "node --watch src/server.js"
+    "start:ioc-admin": "DOTENV_CONFIG_PATH=.env.ioc-admin node src/server.js",
+    "start:ioc-webapp": "DOTENV_CONFIG_PATH=.env.ioc-webapp node src/server.js",
+    "dev": "node --watch src/server.js",
+    "dev:ioc-admin": "DOTENV_CONFIG_PATH=.env.ioc-admin node --watch src/server.js",
+    "dev:ioc-webapp": "DOTENV_CONFIG_PATH=.env.ioc-webapp node --watch src/server.js"
   },
   "keywords": [
     "express",

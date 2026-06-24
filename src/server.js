@@ -1,5 +1,6 @@
 import express from 'express';
 import { config } from './config.js';
+import { createEndpointMatcher } from './endpoints.js';
 import { createProxyHandler } from './proxy.js';
 
 const app = express();
@@ -11,6 +12,8 @@ const allowedOrigins = config.corsOrigin
   .split(',')
   .map((origin) => origin.trim())
   .filter(Boolean);
+
+const endpointMatcher = createEndpointMatcher(config.proxyEndpoints, config.clientApiPrefix);
 
 const devOriginPatterns = [
   /^http:\/\/localhost:\d+$/,
@@ -65,6 +68,7 @@ app.get('/health', (req, res) => {
       service: 'proxy-ioc-admin',
       upstream_base_url: config.upstreamBaseUrl.toString(),
       client_api_prefix: config.clientApiPrefix,
+      proxy_endpoints: config.proxyEndpoints,
     },
   });
 });
@@ -77,6 +81,7 @@ app.get('/__proxy/health', (req, res) => {
       service: 'proxy-ioc-admin',
       upstream_base_url: config.upstreamBaseUrl.toString(),
       client_api_prefix: config.clientApiPrefix,
+      proxy_endpoints: config.proxyEndpoints,
     },
   });
 });
@@ -95,6 +100,7 @@ app.get('/__proxy/config', (req, res) => {
       proxy_timeout_ms: config.proxyTimeoutMs,
       change_origin: config.changeOrigin,
       log_requests: config.logRequests,
+      proxy_endpoints: config.proxyEndpoints,
     },
   });
 });
@@ -106,12 +112,14 @@ app.use(
     proxyTimeoutMs: config.proxyTimeoutMs,
     changeOrigin: config.changeOrigin,
     logRequests: config.logRequests,
+    endpointMatcher,
   }),
 );
 
 const server = app.listen(config.port, config.host, () => {
   console.log(`Proxy IOC Admin listening at http://${config.host}:${config.port}`);
   console.log(`Forwarding ${config.clientApiPrefix}/... to ${config.upstreamBaseUrl.toString()}/...`);
+  console.log(`Configured proxy endpoints: ${config.proxyEndpoints.join(', ')}`);
 });
 
 server.on('error', (error) => {
